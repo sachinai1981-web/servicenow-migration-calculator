@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ServiceNow Migration Cost Calculator | Freshservice</title>
+  <style>
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background: #F4F6F9;
+      color: #2D3748;
+      min-height: 100vh;
+    }
+
+    /* ─── Variables ─── */
+    :root {
+      --green: #00C48C;
+      --green-dark: #009E72;
+      --green-light: #E6FAF4;
+      --navy: #1A1A2E;
+      --navy-mid: #16213E;
+      --slate: #4A5568;
+      --silver: #A0AEC0;
+      --border: #E2E8F0;
+      --white: #FFFFFF;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    /* ─── Hero Header ─── */
+    .hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 60%, #0F3460 100%);
+      color: var(--white);
+      padding: 48px 24px 56px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: rgba(0, 196, 140, 0.08);
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: -40px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(0, 196, 140, 0.05);
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 196, 140, 0.15);
+      border: 1px solid rgba(0, 196, 140, 0.3);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    .hero-badge::before {
+      content: '✦';
+      font-size: 10px;
+    }
+
+    .hero h1 {
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero h1 span {
+      color: var(--green);
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: rgba(255,255,255,0.72);
+      max-width: 540px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ─── Trust Bar ─── */
+    .trust-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--slate);
+      font-weight: 500;
+    }
+
+    .trust-item .icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    /* Logo placeholder area */
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .logo-placeholder {
+      width: 72px;
+      height: 28px;
+      background: #EDF2F7;
+      border-radius: 4px;
+      opacity: 0.6;
+    }
+
+    /* ─── Progress Indicator ─── */
+    .progress-wrap {
+      max-width: 680px;
+      margin: 32px auto 0;
+      padding: 0 24px;
+    }
+
+    .progress-steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--silver);
+      background: var(--white);
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    .step.active .step-num {
+      background: var(--green);
+      border-color: var(--green);
+      color: var(--white);
+    }
+
+    .step.complete .step-num {
+      background: var(--green);
+      border-color: var(--green);
+      color: var(--white);
+    }
+
+    .step-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--silver);
+      white-space: nowrap;
+    }
+
+    .step.active .step-label {
+      color: var(--navy);
+    }
+
+    .step.complete .step-label {
+      color: var(--green-dark);
+    }
+
+    .step-connector {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      margin: 0 8px;
+      position: relative;
+    }
+
+    .step-connector.filled {
+      background: var(--green);
+    }
+
+    /* ─── Main Layout ─── */
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 24px 24px 60px;
+    }
+
+    /* ─── Card ─── */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(to right, #FAFBFC, var(--white));
+    }
+
+    .card-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .card-header p {
+      font-size: 13px;
+      color: var(--slate);
+    }
+
+    .card-body {
+      padding: 28px;
+    }
+
+    /* ─── Form ─── */
+    .form-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--silver);
+      margin-bottom: 16px;
+      margin-top: 28px;
+    }
+
+    .form-section-title:first-child {
+      margin-top: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-grid.full {
+      grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 520px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.span-2 {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    label .required {
+      color: var(--green);
+      margin-left: 2px;
+    }
+
+    label .hint {
+      font-weight: 400;
+      color: var(--silver);
+      font-size: 12px;
+      margin-left: 4px;
+    }
+
+    input[type="number"],
+    input[type="email"],
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--navy);
+      background: var(--white);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="number"]:focus,
+    input[type="email"]:focus,
+    input[type="text"]:focus,
+    select:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(0, 196, 140, 0.12);
+    }
+
+    input::placeholder {
+      color: #CBD5E0;
+    }
+
+    /* Custom select arrow */
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--slate);
+      pointer-events: none;
+    }
+
+    .select-wrap select {
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    /* ─── Email Gate Section ─── */
+    .gate-section {
+      margin-top: 28px;
+      padding: 20px;
+      background: var(--green-light);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(0, 196, 140, 0.2);
+    }
+
+    .gate-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+
+    .gate-section p {
+      font-size: 12px;
+      color: var(--slate);
+      margin-bottom: 16px;
+    }
+
+    /* ─── Submit Button ─── */
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 24px;
+      background: var(--green);
+      color: var(--white);
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      letter-spacing: 0.01em;
+      margin-top: 20px;
+    }
+
+    .btn-primary:hover {
+      background: var(--green-dark);
+      box-shadow: 0 4px 14px rgba(0, 196, 140, 0.35);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary .arrow {
+      font-size: 18px;
+    }
+
+    .btn-disclaimer {
+      font-size: 11px;
+      color: var(--silver);
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* ─── Results Section ─── */
+    #results-section {
+      display: none;
+      margin-top: 24px;
+    }
+
+    .results-header {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .results-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: var(--green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .results-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 2px;
+    }
+
+    .results-header p {
+      font-size: 12px;
+      color: var(--slate);
+    }
+
+    /* ─── Metric Cards ─── */
+    .metrics-grid {
+      padding: 24px 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .metric-card {
+      background: #FAFBFC;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+    }
+
+    .metric-card.highlight {
+      background: var(--green-light);
+      border-color: rgba(0, 196, 140, 0.3);
+    }
+
+    .metric-card.highlight-navy {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      border-color: var(--navy);
+    }
+
+    .metric-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--silver);
+      margin-bottom: 8px;
+    }
+
+    .metric-card.highlight .metric-label {
+      color: var(--green-dark);
+    }
+
+    .metric-card.highlight-navy .metric-label {
+      color: rgba(255,255,255,0.55);
+    }
+
+    .metric-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .metric-card.highlight .metric-value {
+      color: var(--green-dark);
+    }
+
+    .metric-card.highlight-navy .metric-value {
+      color: var(--white);
+    }
+
+    .metric-sublabel {
+      font-size: 11px;
+      color: var(--silver);
+      margin-top: 4px;
+    }
+
+    .metric-card.highlight-navy .metric-sublabel {
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* Span 2 columns */
+    .metric-card.span-2 {
+      grid-column: 1 / -1;
+    }
+
+    /* ─── ROI Banner ─── */
+    .roi-banner {
+      margin: 0 28px 24px;
+      background: linear-gradient(135deg, var(--navy) 0%, #0F3460 100%);
+      border-radius: var(--radius-sm);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .roi-badge {
+      background: var(--green);
+      color: var(--white);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .roi-text {
+      flex: 1;
+    }
+
+    .roi-text strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 2px;
+    }
+
+    .roi-text span {
+      font-size: 12px;
+      color: rgba(255,255,255,0.55);
+    }
+
+    .roi-number {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--green);
+      letter-spacing: -0.03em;
+      flex-shrink: 0;
+    }
+
+    /* ─── CTA Section ─── */
+    .cta-section {
+      padding: 0 28px 28px;
+    }
+
+    .cta-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .cta-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+
+    .cta-subtitle {
+      font-size: 13px;
+      color: var(--slate);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .btn-demo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px 24px;
+      background: var(--green);
+      color: var(--white);
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-demo:hover {
+      background: var(--green-dark);
+      box-shadow: 0 6px 20px rgba(0, 196, 140, 0.4);
+    }
+
+    .btn-demo:active {
+      transform: scale(0.98);
+    }
+
+    .cta-features {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .cta-feature {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--slate);
+    }
+
+    .cta-feature::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    /* ─── Footer ─── */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--silver);
+    }
+
+    .footer a {
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 600px) {
+      .hero {
+        padding: 36px 20px 44px;
+      }
+
+      .card-body,
+      .card-header,
+      .results-header,
+      .metrics-grid,
+      .roi-banner,
+      .cta-section {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .trust-bar {
+        gap: 16px;
+      }
+
+      .logo-row {
+        gap: 12px;
+      }
+
+      .logo-placeholder {
+        width: 56px;
+        height: 22px;
+      }
+
+      .roi-banner {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Hero ─── -->
+  <div class="hero">
+    <div class="hero-badge">Free ROI Calculator</div>
+    <h1>What Would You Save by<br>Switching from <span>ServiceNow</span>?</h1>
+    <p>Get an instant, personalised estimate of your migration costs and 3-year savings — built for enterprise IT leaders.</p>
+  </div>
+
+  <!-- ─── Trust Bar ─── -->
+  <div class="trust-bar">
+    <div class="trust-item">
+      <div class="icon">✦</div>
+      Used by 500+ IT teams globally
+    </div>
+    <div class="trust-item">
+      <div class="icon">✦</div>
+      Average 40% cost reduction
+    </div>
+    <div class="trust-item">
+      <div class="icon">✦</div>
+      Results in under 60 seconds
+    </div>
+    <div class="logo-row">
+      <div class="logo-placeholder"></div>
+      <div class="logo-placeholder"></div>
+      <div class="logo-placeholder"></div>
+      <div class="logo-placeholder"></div>
+    </div>
+  </div>
+
+  <!-- ─── Progress Steps ─── -->
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step active" id="step-1">
+        <div class="step-num">1</div>
+        <div class="step-label">Your Details</div>
+      </div>
+      <div class="step-connector" id="step-connector"></div>
+      <div class="step" id="step-2">
+        <div class="step-num">2</div>
+        <div class="step-label">Your Results</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Main Container ─── -->
+  <div class="container">
+
+    <!-- Calculator Form Card -->
+    <div class="card">
+      <div class="card-header">
+        <h2>Your ServiceNow Environment</h2>
+        <p>Fill in the fields below — we estimate costs in real time.</p>
+      </div>
+      <div class="card-body">
+        <form id="calculator-form" novalidate>
+
+          <!-- Platform Details -->
+          <div class="form-section-title">Platform Details</div>
+          <div class="form-grid">
+            <div class="field span-2">
+              <label for="servicenow-contract">
+                Annual ServiceNow Contract Value
+                <span class="required">*</span>
+                <span class="hint">(USD)</span>
+              </label>
+              <input
+                type="number"
+                id="servicenow-contract"
+                name="servicenow-contract"
+                placeholder="e.g. 500000"
+                min="0"
+                step="1000"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="it-staff">
+                IT Staff on Platform
+                <span class="required">*</span>
+              </label>
+              <input
+                type="number"
+                id="it-staff"
+                name="it-staff"
+                placeholder="e.g. 50"
+                min="1"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="modules-in-use">
+                Modules in Use
+                <span class="required">*</span>
+              </label>
+              <div class="select-wrap">
+                <select id="modules-in-use" name="modules-in-use" required>
+                  <option value="" disabled selected>Select range</option>
+                  <option value="1-3">1–3 modules</option>
+                  <option value="4-6">4–6 modules</option>
+                  <option value="7-10">7–10 modules</option>
+                  <option value="10+">10+ modules</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Company Info -->
+          <div class="form-section-title">Company Info</div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="company-size">
+                Company Size
+                <span class="required">*</span>
+                <span class="hint">(employees)</span>
+              </label>
+              <div class="select-wrap">
+                <select id="company-size" name="company-size" required>
+                  <option value="" disabled selected>Select size</option>
+                  <option value="50-500">50–500</option>
+                  <option value="500-2000">500–2,000</option>
+                  <option value="2000-10000">2,000–10,000</option>
+                  <option value="10000+">10,000+</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="migration-timeline">
+                Migration Timeline
+                <span class="required">*</span>
+              </label>
+              <div class="select-wrap">
+                <select id="migration-timeline" name="migration-timeline" required>
+                  <option value="" disabled selected>Select timeline</option>
+                  <option value="3">3 months</option>
+                  <option value="6">6 months</option>
+                  <option value="12">12 months</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email Gate -->
+          <div class="gate-section">
+            <h3>Get Your Personalised Results</h3>
+            <p>Enter your work email and company name to unlock your full cost breakdown and 3-year savings report.</p>
+            <div class="form-grid">
+              <div class="field">
+                <label for="work-email">
+                  Work Email
+                  <span class="required">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="work-email"
+                  name="work-email"
+                  placeholder="you@company.com"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="company-name">
+                  Company Name
+                  <span class="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="company-name"
+                  name="company-name"
+                  placeholder="Acme Corporation"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn-primary">
+            Calculate My Savings
+            <span class="arrow">→</span>
+          </button>
+          <p class="btn-disclaimer">No spam. Your data is used only to personalise your results.</p>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- Results Section (hidden by default) -->
+    <div id="results-section">
+      <div class="card">
+        <div class="results-header">
+          <div class="results-icon">📊</div>
+          <div>
+            <h2>Your Migration Cost Estimate</h2>
+            <p>Based on your ServiceNow environment and migration timeline</p>
+          </div>
+        </div>
+
+        <!-- Metric Cards Grid -->
+        <div class="metrics-grid">
+
+          <div class="metric-card">
+            <div class="metric-label">Current Annual Cost</div>
+            <div class="metric-value" id="result-servicenow-cost">—</div>
+            <div class="metric-sublabel">ServiceNow contract today</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">One-Time Migration Cost</div>
+            <div class="metric-value" id="result-migration-cost">—</div>
+            <div class="metric-sublabel">Estimated all-in migration</div>
+          </div>
+
+          <div class="metric-card highlight">
+            <div class="metric-label">Freshservice Annual Cost</div>
+            <div class="metric-value" id="result-freshservice-cost">—</div>
+            <div class="metric-sublabel">Estimated annual spend post-migration</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Year 1 Total with Freshservice</div>
+            <div class="metric-value" id="result-year1-total">—</div>
+            <div class="metric-sublabel">Migration + first year subscription</div>
+          </div>
+
+          <div class="metric-card highlight span-2">
+            <div class="metric-label">3-Year Savings vs Staying on ServiceNow</div>
+            <div class="metric-value" id="result-3yr-savings">—</div>
+            <div class="metric-sublabel">Total savings over a 3-year period</div>
+          </div>
+
+        </div>
+
+        <!-- ROI Banner -->
+        <div class="roi-banner">
+          <div class="roi-badge">ROI</div>
+          <div class="roi-text">
+            <strong>Return on Investment</strong>
+            <span>Based on your 3-year savings vs migration cost</span>
+          </div>
+          <div class="roi-number" id="result-roi">—</div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-section">
+          <hr class="cta-divider" />
+          <div class="cta-title">Ready to see Freshservice in action?</div>
+          <div class="cta-subtitle">
+            Talk to a Freshworks solutions engineer who specialises in ServiceNow migrations.
+            Get a tailored demo and a detailed TCO analysis for your organisation.
+          </div>
+          <a href="https://www.freshworks.com/freshservice/demo/" target="_blank" rel="noopener" class="btn-demo" id="demo-cta-btn">
+            Book a Freshworks Demo →
+          </a>
+          <div class="cta-features">
+            <span class="cta-feature">No commitment required</span>
+            <span class="cta-feature">Migration support included</span>
+            <span class="cta-feature">Custom pricing available</span>
+            <span class="cta-feature">30-day free trial</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── Footer ─── -->
+  <div class="footer">
+    <p>Estimates are indicative and based on industry averages. Actual costs may vary.</p>
+    <p style="margin-top:4px;">© 2026 Freshworks Inc. · <a href="#">Privacy Policy</a> · <a href="#">Terms of Use</a></p>
+  </div>
+
+</body>
+</html>
