@@ -235,29 +235,8 @@ function persistLeadData(email, company, results) {
 function handleSubmit(event) {
   event.preventDefault();
 
-  const emailInput = document.getElementById("work-email");
-  const companyInput = document.getElementById("company-name");
-  const email = emailInput ? emailInput.value.trim() : "";
-  const company = companyInput ? companyInput.value.trim() : "";
-
-  // Validate email presence and format
-  if (!email || !isValidEmail(email)) {
-    showInlineError("work-email", "Please enter a valid email address");
-    return;
-  }
-
-  // Reject personal email domains
-  if (isPersonalEmail(email)) {
-    showInlineError("work-email", "Please use your work email");
-    return;
-  }
-
-  clearInlineError("work-email");
-
   const inputs = getInputValues();
   const results = calculate(inputs);
-
-  persistLeadData(email, company, results);
 
   hideForm();
   renderResults(results);
